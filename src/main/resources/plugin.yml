@@ -1,0 +1,19 @@
+name: Elevator
+main: me.mocha.Elevator
+authors: [mocha, sabone, DeBe, Leinne]
+version: 1.0-SNAPSHOT
+description: Elevator management plugin
+api: [1.0.0]
+
+permissions:
+ elevator.manage:
+  description: Elevator management permission
+  default: op
+
+commands:
+ elevator:
+  usage: /elevator <create (height) | delete | reset>
+  permission: elevator.manage
+  description: Elevator management command
+  default: op
+  aliases: [el]
