@@ -11,7 +11,7 @@ import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerMoveEvent;
 import cn.nukkit.event.player.PlayerToggleSneakEvent;
-import cn.nukkit.level.sound.ButtonClickSound;
+import cn.nukkit.level.Sound;
 import cn.nukkit.plugin.PluginBase;
 
 import static cn.nukkit.utils.TextFormat.*;
@@ -113,8 +113,7 @@ public class Elevator extends PluginBase implements Listener {
             for (int i = 0; i < Math.abs(h);i++) {
                 this.getServer().getScheduler().scheduleDelayedTask(() -> {
                     p.teleport(p.add(0, 1));
-                    ButtonClickSound sound = new ButtonClickSound(p.getLocation());
-                    p.getLevel().addSound(sound);
+                    p.getLevel().addSound(p,Sound.RANDOM_ORB);
                 }, i*20);
             }
             this.getServer().getScheduler().scheduleDelayedTask(() -> {
