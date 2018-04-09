@@ -15,7 +15,7 @@ import cn.nukkit.level.Sound;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.AdventureSettings;
 import cn.nukkit.level.particle.SmokeParticle;
-import cn.nukkit.level.particle.SmokeParticle;
+import cn.nukkit.level.particle.ExplodeParticle;
 
 import static cn.nukkit.utils.TextFormat.*;
 
@@ -131,7 +131,7 @@ public class Elevator extends PluginBase implements Listener {
                     p.teleport(p.getLocation().add(0,1));
                     p.getLevel().addSound(p,Sound.RANDOM_ORB);
                     p.getLevel().addParticle(new SmokeParticle(p,5));
-                }, i*120);
+                }, i*10);
             }
             this.getServer().getScheduler().scheduleDelayedTask(() -> {
             	if(!settings[0]){
@@ -143,10 +143,10 @@ public class Elevator extends PluginBase implements Listener {
             	if(!settings[2]){
             		p.getAdventureSettings().set(AdventureSettings.Type.NO_CLIP,false);
             	}
-                p.getAdventureSettings().update()
-              	p.getLevel().addParticle(new ExplodeParticle(p,5));;
+               p.getAdventureSettings().update();
+              	p.getLevel().addParticle(new ExplodeParticle(p));
                 passeger.remove(p.getName());
-            }, Math.abs(h)100);
+            }, Math.abs(h)*10);
             return;
         }
     }
