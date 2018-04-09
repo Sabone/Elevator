@@ -11,8 +11,11 @@ import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerMoveEvent;
 import cn.nukkit.event.player.PlayerToggleSneakEvent;
-import cn.nukkit.level.sound.ButtonClickSound;
+import cn.nukkit.level.Sound;
 import cn.nukkit.plugin.PluginBase;
+import cn.nukkit.AdventureSettings;
+import cn.nukkit.level.particle.SmokeParticle;
+import cn.nukkit.level.particle.SmokeParticle;
 
 import static cn.nukkit.utils.TextFormat.*;
 
@@ -105,25 +108,45 @@ public class Elevator extends PluginBase implements Listener {
         if (this.getConfig().exists(loc)) {
             passeger.add(p.getName());
             int h = this.getConfig().getInt(loc);
-            p.getAdventureSettings().setCanFly(true);
-            p.getAdventureSettings().setFlying(true);
-            p.getAdventureSettings().setNoclip(true);
+            AdventureSettings adventure=p.getAdventureSettings();
+            boolean[] settings={false,false,false};
+            if(adventure.get(AdventureSettings.Type.FLYING)){
+            	settings[0]=true;
+            }
+            if(adventure.get(AdventureSettings.Type.ALLOW_FLIGHT)){
+            	settings[1]=true;
+            }
+            if(adventure.get(AdventureSettings.Type.NO_CLIP)){
+            	settings[2]=true;
+            }
+            adventure.set(AdventureSettings.Type.FLYING,true);
+            adventure.set(AdventureSettings.Type.ALLOW_FLIGHT,true);
+            adventure.set(AdventureSettings.Type.NO_CLIP,true);
             p.getAdventureSettings().update();
 
             for (int i = 0; i < Math.abs(h);i++) {
                 this.getServer().getScheduler().scheduleDelayedTask(() -> {
-                    p.teleport(p.add(0, 1));
-                    ButtonClickSound sound = new ButtonClickSound(p.getLocation());
-                    p.getLevel().addSound(sound);
-                }, i*20);
+                    //p.teleport(p.add(0, 1));
+                    
+                    p.teleport(p.getLocation().add(0,1));
+                    p.getLevel().addSound(p,Sound.RANDOM_ORB);
+                    p.getLevel().addParticle(new SmokeParticle(p,5));
+                }, i*120);
             }
             this.getServer().getScheduler().scheduleDelayedTask(() -> {
-                p.getAdventureSettings().setCanFly(false);
-                p.getAdventureSettings().setFlying(false);
-                p.getAdventureSettings().setNoclip(false);
-                p.getAdventureSettings().update();
+            	if(!settings[0]){
+            		p.getAdventureSettings().set(AdventureSettings.Type.FLYING,false);
+            	}
+            	if(!settings[1]){
+            		p.getAdventureSettings().set(AdventureSettings.Type.ALLOW_FLIGHT,false);
+            	}
+            	if(!settings[2]){
+            		p.getAdventureSettings().set(AdventureSettings.Type.NO_CLIP,false);
+            	}
+                p.getAdventureSettings().update()
+              	p.getLevel().addParticle(new ExplodeParticle(p,5));;
                 passeger.remove(p.getName());
-            }, Math.abs(h)*20);
+            }, Math.abs(h)100);
             return;
         }
     }
