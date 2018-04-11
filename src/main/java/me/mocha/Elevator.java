@@ -10,6 +10,7 @@ import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerMoveEvent;
+import cn.nukkit.event.player.PlayerQuitEvent;
 import cn.nukkit.event.player.PlayerToggleSneakEvent;
 import cn.nukkit.level.Sound;
 import cn.nukkit.plugin.PluginBase;
@@ -80,7 +81,9 @@ public class Elevator extends PluginBase implements Listener {
             // x;y;z;level : height
             Block b = e.getBlock();
             String loc = b.getFloorX()+";"+b.getFloorY()+";"+b.getFloorZ()+";"+b.getLevel().getFolderName();
+            String loc_=b.getFloorX()+";"+(b.getFloorY()+cp.get(p.getName()))+";"+b.getFloorZ()+";"+b.getLevel().getFolderName();
             this.getConfig().set(loc, cp.get(p.getName()));
+            this.getConfig().set(loc_,-cp.get(p.getName()));
             this.getConfig().save();
             cp.remove(p.getName());
             p.sendMessage(AQUA+"[NOTICE] "+ITALIC+GRAY+"Elevator was created on "+loc);
@@ -108,7 +111,12 @@ public class Elevator extends PluginBase implements Listener {
         if (this.getConfig().exists(loc)) {
             passeger.add(p.getName());
             int h = this.getConfig().getInt(loc);
-            AdventureSettings adventure=p.getAdventureSettings();
+	    int h_=Math.abs(h);
+	    int speed=1;
+	    if(h_>=30&&h_<50) speed=5;
+	    if(h_>=50&&h_<100) speed=10;
+	    if(h_>=100) speed=15;
+	    AdventureSettings adventure=p.getAdventureSettings();
             boolean[] settings={false,false,false};
             if(adventure.get(AdventureSettings.Type.FLYING)){
             	settings[0]=true;
@@ -123,15 +131,17 @@ public class Elevator extends PluginBase implements Listener {
             adventure.set(AdventureSettings.Type.ALLOW_FLIGHT,true);
             adventure.set(AdventureSettings.Type.NO_CLIP,true);
             p.getAdventureSettings().update();
-
-            for (int i = 0; i < Math.abs(h);i++) {
-                this.getServer().getScheduler().scheduleDelayedTask(() -> {
-                    //p.teleport(p.add(0, 1));
-                    
-                    p.teleport(p.getLocation().add(0,1));
-                    p.getLevel().addSound(p,Sound.RANDOM_ORB);
-                    p.getLevel().addParticle(new SmokeParticle(p,5));
-                }, i*10);
+            if(h>0){
+            	for(int i=0;i<h;i++){
+            		this.abcdefg(true,speed,p,i);
+            		if(!passeger.contains(p.getName())) return;
+            	}
+            }
+            else{
+            	for(int i=0;i<Math.abs(h);i++){
+            		this.abcdefg(false,speed,p,i);
+            		if(!passeger.contains(p.getName())) return;
+            	}
             }
             this.getServer().getScheduler().scheduleDelayedTask(() -> {
             	if(!settings[0]){
@@ -146,8 +156,11 @@ public class Elevator extends PluginBase implements Listener {
                p.getAdventureSettings().update();
               	p.getLevel().addParticle(new ExplodeParticle(p));
                 passeger.remove(p.getName());
-            }, Math.abs(h)*10);
+            }, Math.abs(h)*(20/speed));
             return;
+        }
+        if(passeger.contains(p.getName())){
+        		passeger.remove(p.getName());
         }
     }
 
@@ -165,4 +178,18 @@ public class Elevator extends PluginBase implements Listener {
             e.setCancelled();
         }
     }
+    @EventHandler
+    public void onQuit(PlayerQuitEvent ev){
+    	if(passeger.contains(ev.getPlayer().getName())){
+    		passeger.remove(ev.getPlayer().getName());
+    	}
+    }
+    
+    void abcdefg(boolean up,int speed,Player p,int height){
+    	this.getServer().getScheduler().scheduleDelayedTask(() -> {
+    		int a=(up)?1:-1;
+    		p.teleport(p.getLocation().add(0,a));
+    		p.getLevel().addSound(p,Sound.RANDOM_ORB);
+    	}, Math.abs(height)*(20/speed));
+   }
 }
